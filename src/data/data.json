@@ -1,0 +1,411 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "name": "Jordan Brown",
+      "group": 1
+    },
+    {
+      "id": 3,
+      "name": "Riley Brown",
+      "group": 1
+    },
+    {
+      "id": 5,
+      "name": "Riley Jones",
+      "group": 1
+    },
+    {
+      "id": 6,
+      "name": "Jamie Martinez",
+      "group": 1
+    },
+    {
+      "id": 7,
+      "name": "Riley Clark",
+      "group": 1
+    },
+    {
+      "id": 8,
+      "name": "Sam Clark",
+      "group": 1
+    },
+    {
+      "id": 11,
+      "name": "Jamie Brown",
+      "group": 1
+    },
+    {
+      "id": 12,
+      "name": "Taylor Miller",
+      "group": 2
+    },
+    {
+      "id": 13,
+      "name": "Sam Davis",
+      "group": 1
+    },
+    {
+      "id": 14,
+      "name": "Avery Brown",
+      "group": 1
+    },
+    {
+      "id": 15,
+      "name": "Drew Smith",
+      "group": 1
+    },
+    {
+      "id": 16,
+      "name": "Jamie Johnson",
+      "group": 3
+    },
+    {
+      "id": 18,
+      "name": "Drew Brown",
+      "group": 1
+    },
+    {
+      "id": 20,
+      "name": "Morgan Johnson",
+      "group": 1
+    },
+    {
+      "id": 21,
+      "name": "Avery Garcia",
+      "group": 3
+    },
+    {
+      "id": 22,
+      "name": "Jordan Smith",
+      "group": 1
+    },
+    {
+      "id": 23,
+      "name": "Drew Garcia",
+      "group": 1
+    },
+    {
+      "id": 24,
+      "name": "Alex Brown",
+      "group": 1
+    },
+    {
+      "id": 25,
+      "name": "Casey Miller",
+      "group": 2
+    },
+    {
+      "id": 26,
+      "name": "Taylor Jones",
+      "group": 1
+    },
+    {
+      "id": 28,
+      "name": "Casey Brown",
+      "group": 1
+    },
+    {
+      "id": 29,
+      "name": "Alex Jones",
+      "group": 1
+    },
+    {
+      "id": 30,
+      "name": "Casey Davis",
+      "group": 1
+    },
+    {
+      "id": 31,
+      "name": "Riley Lee",
+      "group": 1
+    },
+    {
+      "id": 32,
+      "name": "Morgan Smith",
+      "group": 1
+    },
+    {
+      "id": 33,
+      "name": "Morgan Miller",
+      "group": 1
+    },
+    {
+      "id": 34,
+      "name": "Jamie Smith",
+      "group": 1
+    },
+    {
+      "id": 35,
+      "name": "Jamie Miller",
+      "group": 1
+    },
+    {
+      "id": 38,
+      "name": "Riley Martinez",
+      "group": 4
+    },
+    {
+      "id": 39,
+      "name": "Drew Johnson",
+      "group": 1
+    },
+    {
+      "id": 40,
+      "name": "Casey Johnson",
+      "group": 1
+    },
+    {
+      "id": 41,
+      "name": "Riley Garcia",
+      "group": 1
+    },
+    {
+      "id": 42,
+      "name": "Taylor Lee",
+      "group": 1
+    },
+    {
+      "id": 43,
+      "name": "Avery Lee",
+      "group": 4
+    },
+    {
+      "id": 44,
+      "name": "Jordan Davis",
+      "group": 1
+    },
+    {
+      "id": 45,
+      "name": "Taylor Johnson",
+      "group": 1
+    },
+    {
+      "id": 46,
+      "name": "Casey Smith",
+      "group": 1
+    },
+    {
+      "id": 47,
+      "name": "Alex Garcia",
+      "group": 1
+    },
+    {
+      "id": 48,
+      "name": "Jordan Johnson",
+      "group": 4
+    },
+    {
+      "id": 49,
+      "name": "Taylor Brown",
+      "group": 4
+    },
+    {
+      "id": 50,
+      "name": "Riley Davis",
+      "group": 4
+    }
+  ],
+  "links": [
+    {
+      "source": 1,
+      "target": 35,
+      "value": 1
+    },
+    {
+      "source": 3,
+      "target": 23,
+      "value": 1
+    },
+    {
+      "source": 3,
+      "target": 34,
+      "value": 1
+    },
+    {
+      "source": 3,
+      "target": 39,
+      "value": 1
+    },
+    {
+      "source": 3,
+      "target": 46,
+      "value": 1
+    },
+    {
+      "source": 5,
+      "target": 6,
+      "value": 1
+    },
+    {
+      "source": 5,
+      "target": 7,
+      "value": 1
+    },
+    {
+      "source": 5,
+      "target": 32,
+      "value": 1
+    },
+    {
+      "source": 8,
+      "target": 14,
+      "value": 1
+    },
+    {
+      "source": 8,
+      "target": 30,
+      "value": 1
+    },
+    {
+      "source": 11,
+      "target": 15,
+      "value": 1
+    },
+    {
+      "source": 11,
+      "target": 26,
+      "value": 1
+    },
+    {
+      "source": 11,
+      "target": 35,
+      "value": 1
+    },
+    {
+      "source": 11,
+      "target": 42,
+      "value": 1
+    },
+    {
+      "source": 12,
+      "target": 25,
+      "value": 1
+    },
+    {
+      "source": 13,
+      "target": 35,
+      "value": 1
+    },
+    {
+      "source": 14,
+      "target": 20,
+      "value": 1
+    },
+    {
+      "source": 14,
+      "target": 26,
+      "value": 1
+    },
+    {
+      "source": 15,
+      "target": 28,
+      "value": 1
+    },
+    {
+      "source": 15,
+      "target": 47,
+      "value": 1
+    },
+    {
+      "source": 16,
+      "target": 21,
+      "value": 1
+    },
+    {
+      "source": 18,
+      "target": 20,
+      "value": 1
+    },
+    {
+      "source": 18,
+      "target": 31,
+      "value": 1
+    },
+    {
+      "source": 18,
+      "target": 44,
+      "value": 1
+    },
+    {
+      "source": 20,
+      "target": 39,
+      "value": 1
+    },
+    {
+      "source": 22,
+      "target": 30,
+      "value": 1
+    },
+    {
+      "source": 24,
+      "target": 39,
+      "value": 1
+    },
+    {
+      "source": 26,
+      "target": 41,
+      "value": 1
+    },
+    {
+      "source": 26,
+      "target": 45,
+      "value": 1
+    },
+    {
+      "source": 29,
+      "target": 35,
+      "value": 1
+    },
+    {
+      "source": 30,
+      "target": 41,
+      "value": 1
+    },
+    {
+      "source": 32,
+      "target": 42,
+      "value": 1
+    },
+    {
+      "source": 33,
+      "target": 34,
+      "value": 1
+    },
+    {
+      "source": 34,
+      "target": 41,
+      "value": 1
+    },
+    {
+      "source": 34,
+      "target": 46,
+      "value": 1
+    },
+    {
+      "source": 38,
+      "target": 43,
+      "value": 1
+    },
+    {
+      "source": 38,
+      "target": 50,
+      "value": 1
+    },
+    {
+      "source": 40,
+      "target": 45,
+      "value": 1
+    },
+    {
+      "source": 43,
+      "target": 49,
+      "value": 1
+    },
+    {
+      "source": 48,
+      "target": 50,
+      "value": 1
+    }
+  ]
+}
