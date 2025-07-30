@@ -4,119 +4,165 @@
 const fs = require('fs');
 const path = require('path');
 
-const NUM_PEOPLE = 50; // Number of unique users
-const MAX_REPLIES = 10; // Max replies to a single person
-const TOTAL_INTERACTIONS = 40; // Total number of interactions
+const NUM_PEOPLE = 150; // Number of unique users
+const TOTAL_INTERACTIONS = 300; // Total number of interactions
+const NUM_ASSIGNMENTS = 5; // Number of different assignment IDs
 const DATA_FILE = path.join(__dirname, 'data.json');
 
 // =========================
-// Helper Functions
+// Optimized Helper Functions
 // =========================
 
-// Generate unique random names
-const usedNames = new Set();
-function trulyUniqueName() {
-  const firstNames = ['Alex', 'Sam', 'Jordan', 'Taylor', 'Morgan', 'Casey', 'Riley', 'Jamie', 'Avery', 'Drew'];
-  const lastNames = ['Smith', 'Johnson', 'Lee', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis', 'Martinez', 'Clark'];
-  let name;
-  do {
-    name =
-      firstNames[Math.floor(Math.random() * firstNames.length)] +
-      ' ' +
-      lastNames[Math.floor(Math.random() * lastNames.length)];
-  } while (usedNames.has(name));
-  usedNames.add(name);
-  return name;
+// Pre-computed name arrays for faster access
+const FIRST_NAMES = ['Alex', 'Sam', 'Jordan', 'Taylor', 'Morgan', 'Casey', 'Riley', 'Jamie', 'Avery', 'Drew'];
+const LAST_NAMES = ['Smith', 'Johnson', 'Lee', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis', 'Martinez', 'Clark'];
+const FIRST_NAMES_LENGTH = FIRST_NAMES.length;
+const LAST_NAMES_LENGTH = LAST_NAMES.length;
+
+// Pre-generate all possible names to avoid collision checking
+const ALL_NAMES = new Set();
+for (let i = 0; i < FIRST_NAMES_LENGTH; i++) {
+  for (let j = 0; j < LAST_NAMES_LENGTH; j++) {
+    ALL_NAMES.add(`${FIRST_NAMES[i]} ${LAST_NAMES[j]}`);
+  }
+}
+const NAME_ARRAY = Array.from(ALL_NAMES);
+
+// Generate unique random names using pre-computed array
+function generateUniqueName() {
+  return NAME_ARRAY[Math.floor(Math.random() * NAME_ARRAY.length)];
 }
 
-// Generate undirected interactions
-function generateInteractions(numPeople, maxReplies, totalInteractions) {
-  const interactions = new Set();
-  const replyCounts = Array.from({ length: numPeople + 1 }, () => ({}));
-
-  while (interactions.size < totalInteractions) {
-    let a = Math.ceil(Math.random() * numPeople);
-    let b = Math.ceil(Math.random() * numPeople);
-    if (a === b) continue;
-    // Always store as [min, max] for undirected
-    const pair = a < b ? [a, b] : [b, a];
-    const key = pair.join('-');
-    // Check max replies
-    if (
-      (replyCounts[pair[0]][pair[1]] || 0) >= maxReplies ||
-      (replyCounts[pair[1]][pair[0]] || 0) >= maxReplies
-    ) {
-      continue;
-    }
-    if (!interactions.has(key)) {
-      interactions.add(key);
-      replyCounts[pair[0]][pair[1]] = (replyCounts[pair[0]][pair[1]] || 0) + 1;
-      replyCounts[pair[1]][pair[0]] = (replyCounts[pair[1]][pair[0]] || 0) + 1;
+// Optimized interaction generation using Fisher-Yates shuffle
+function generateInteractions(numPeople, totalInteractions, numAssignments) {
+  // Pre-calculate all possible pairs to avoid collision checking
+  const allPossiblePairs = [];
+  for (let i = 1; i <= numPeople; i++) {
+    for (let j = i + 1; j <= numPeople; j++) {
+      allPossiblePairs.push([i, j]);
     }
   }
-  // Convert to array of objects { source, target, value }
-  return Array.from(interactions).map((k) => {
-    const [source, target] = k.split('-').map(Number);
-    return { source, target, value: 1 };
-  });
-}
-
-// Union-find helpers for group assignment
-function createDisjointSet(ids) {
-  const parent = {};
-  ids.forEach(id => { parent[id] = id; });
-  return parent;
-}
-
-function find(parent, id) {
-  if (parent[id] !== id) {
-    parent[id] = find(parent, parent[id]);
+  
+  // Fisher-Yates shuffle to get random pairs efficiently
+  const shuffledPairs = [...allPossiblePairs];
+  for (let i = shuffledPairs.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffledPairs[i], shuffledPairs[j]] = [shuffledPairs[j], shuffledPairs[i]];
   }
-  return parent[id];
+  
+  // Take the first totalInteractions pairs
+  const selectedPairs = shuffledPairs.slice(0, totalInteractions);
+  
+  // Convert to final format with assignment IDs
+  return selectedPairs.map(([user1, user2], index) => ({
+    user1,
+    user2,
+    assignmentId: (index % numAssignments) + 1,
+    value: "Text Placeholder"
+  }));
 }
 
-function union(parent, id1, id2) {
-  const root1 = find(parent, id1);
-  const root2 = find(parent, id2);
-  if (root1 !== root2) {
-    parent[root2] = root1;
+// Optimized assignments generation
+function generateAssignments(numAssignments) {
+  const assignments = new Array(numAssignments);
+  for (let i = 0; i < numAssignments; i++) {
+    assignments[i] = {
+      assignmentId: i + 1,
+      title: `Assignment ${i + 1}`
+    };
+  }
+  return assignments;
+}
+
+// Optimized union-find with path compression and union by rank
+class UnionFind {
+  constructor(size) {
+    this.parent = new Array(size + 1);
+    this.rank = new Array(size + 1);
+    for (let i = 1; i <= size; i++) {
+      this.parent[i] = i;
+      this.rank[i] = 0;
+    }
+  }
+  
+  find(id) {
+    if (this.parent[id] !== id) {
+      this.parent[id] = this.find(this.parent[id]); // Path compression
+    }
+    return this.parent[id];
+  }
+  
+  union(id1, id2) {
+    const root1 = this.find(id1);
+    const root2 = this.find(id2);
+    if (root1 !== root2) {
+      if (this.rank[root1] < this.rank[root2]) {
+        this.parent[root1] = root2;
+      } else if (this.rank[root1] > this.rank[root2]) {
+        this.parent[root2] = root1;
+      } else {
+        this.parent[root2] = root1;
+        this.rank[root1]++;
+      }
+    }
   }
 }
 
 // =========================
-// Main Data Generation Logic
+// Optimized Main Data Generation Logic
 // =========================
 
-// 1. Generate interactions (links)
-let links = generateInteractions(NUM_PEOPLE, MAX_REPLIES, TOTAL_INTERACTIONS);
-// Sort links by the numerical value of the first entry, then second entry
-links = links.sort((a, b) => {
-  if (a.source !== b.source) return a.source - b.source;
-  return a.target - b.target;
-});
+// 1. Generate all users efficiently
+const users = new Array(NUM_PEOPLE);
+for (let i = 0; i < NUM_PEOPLE; i++) {
+  users[i] = { 
+    id: i + 1, 
+    name: generateUniqueName() 
+  };
+}
 
-// 2. Collect unique user IDs
-const uniqueIds = Array.from(new Set(links.flatMap(l => [l.source, l.target])));
+// 2. Generate interactions efficiently
+const links = generateInteractions(NUM_PEOPLE, TOTAL_INTERACTIONS, NUM_ASSIGNMENTS);
 
-// 3. Assign groups using union-find (connected components)
-const parent = createDisjointSet(uniqueIds);
-links.forEach(link => union(parent, link.source, link.target));
-// Map each root to a group number
-const groupMap = {};
+// 3. Collect unique user IDs from interactions using Set for O(1) lookup
+const uniqueIdsInInteractions = new Set();
+for (const link of links) {
+  uniqueIdsInInteractions.add(link.user1);
+  uniqueIdsInInteractions.add(link.user2);
+}
+
+// 4. Optimized group assignment using improved union-find
+const unionFind = new UnionFind(NUM_PEOPLE);
+for (const link of links) {
+  unionFind.union(link.user1, link.user2);
+}
+
+// Build group mapping efficiently
+const groupMap = new Map();
 let groupNum = 1;
-uniqueIds.forEach(id => {
-  const root = find(parent, id);
-  if (!(root in groupMap)) {
-    groupMap[root] = groupNum++;
+for (const id of uniqueIdsInInteractions) {
+  const root = unionFind.find(id);
+  if (!groupMap.has(root)) {
+    groupMap.set(root, groupNum++);
   }
-});
+}
 
-// 4. Generate users with group assignment
-let users = uniqueIds.map(id => ({ id, name: trulyUniqueName(), group: groupMap[find(parent, id)] }));
-// Sort users by id (numerically)
-users = users.sort((a, b) => a.id - b.id);
+// 5. Assign groups to all users efficiently
+for (let i = 0; i < users.length; i++) {
+  const user = users[i];
+  if (uniqueIdsInInteractions.has(user.id)) {
+    user.group = groupMap.get(unionFind.find(user.id));
+  } else {
+    user.group = groupNum++;
+  }
+}
 
-// 5. Write both users and links to data.json
-const output = { users, links };
+// 6. Generate assignments
+const assignments = generateAssignments(NUM_ASSIGNMENTS);
+
+// 7. Write to file efficiently
+const output = { users, links, assignments };
 fs.writeFileSync(DATA_FILE, JSON.stringify(output, null, 2));
-console.log('Generated data.json with users and links.'); 
+
+console.log(`Generated data.json with ${users.length} users, ${links.length} links, and ${NUM_ASSIGNMENTS} assignments.`);
+console.log(`Users in interactions: ${uniqueIdsInInteractions.size}, Users not in interactions: ${users.length - uniqueIdsInInteractions.size}`); 
