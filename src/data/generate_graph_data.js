@@ -131,36 +131,10 @@ for (const link of links) {
   uniqueIdsInInteractions.add(link.user2);
 }
 
-// 4. Optimized group assignment using improved union-find
-const unionFind = new UnionFind(NUM_PEOPLE);
-for (const link of links) {
-  unionFind.union(link.user1, link.user2);
-}
-
-// Build group mapping efficiently
-const groupMap = new Map();
-let groupNum = 1;
-for (const id of uniqueIdsInInteractions) {
-  const root = unionFind.find(id);
-  if (!groupMap.has(root)) {
-    groupMap.set(root, groupNum++);
-  }
-}
-
-// 5. Assign groups to all users efficiently
-for (let i = 0; i < users.length; i++) {
-  const user = users[i];
-  if (uniqueIdsInInteractions.has(user.id)) {
-    user.group = groupMap.get(unionFind.find(user.id));
-  } else {
-    user.group = groupNum++;
-  }
-}
-
-// 6. Generate assignments
+// 4. Generate assignments
 const assignments = generateAssignments(NUM_ASSIGNMENTS);
 
-// 7. Write to file efficiently
+// 5. Write to file efficiently
 const output = { users, links, assignments };
 fs.writeFileSync(DATA_FILE, JSON.stringify(output, null, 2));
 
