@@ -1,138 +1,137 @@
-import React, { useRef, useEffect, useMemo, useState } from "react";
-import * as d3 from "d3";
-import rawData from "../data/data.json";
+import React, { useRef, useEffect, useMemo, useState } from "react"
+import * as d3 from "d3"
+import rawData from "../data/data.json"
 
 export default function DisjointNodeGraph() {
-  const containerRef = useRef(null);
+  const containerRef = useRef(null)
   const [selectedAssignments, setSelectedAssignments] = useState(
     new Set(["all"])
-  );
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  )
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false)
 
   // Configuration variables
-  const BASE_NODE_RADIUS = 5;
-  const INTERACTION_SCALE_FACTOR = 1.25; // 50% increase per interaction
-  const NODE_COLOUR = "#4D4DFF";
-  const ISOLATED_COLOUR = "#FF4D4D";
+  const BASE_NODE_RADIUS = 5
+  const INTERACTION_SCALE_FACTOR = 1.25 // 50% increase per interaction
+  const NODE_COLOUR = "#4D4DFF"
+  const ISOLATED_COLOUR = "#FF4D4D"
 
   // Support both .default and direct import (for different bundlers)
-  const data = rawData.default || rawData;
+  const data = rawData.default || rawData
   // Defensive checks for users and links
-  const users = Array.isArray(data.users) ? data.users : [];
+  const users = Array.isArray(data.users) ? data.users : []
   const links = Array.isArray(data.links)
     ? data.links.map((l) => ({ ...l, value: l.value ?? "Text Placeholder" }))
-    : [];
-  const assignments = Array.isArray(data.assignments) ? data.assignments : [];
+    : []
+  const assignments = Array.isArray(data.assignments) ? data.assignments : []
 
   // Create a map for quick assignment lookup
   const assignmentMap = new Map(
     assignments.map((a) => [a.assignmentId, a.title])
-  );
+  )
 
   // Handle checkbox changes
   const handleAssignmentChange = (assignmentId) => {
-    const newSelected = new Set(selectedAssignments);
+    const newSelected = new Set(selectedAssignments)
 
     if (assignmentId === "all") {
       if (newSelected.has("all")) {
         // If "all" is selected, deselect it and select all individual assignments
-        newSelected.delete("all");
+        newSelected.delete("all")
         assignments.forEach((assignment) =>
           newSelected.add(assignment.assignmentId.toString())
-        );
+        )
       } else {
         // If "all" is not selected, select it and deselect all individual assignments
-        newSelected.clear();
-        newSelected.add("all");
+        newSelected.clear()
+        newSelected.add("all")
       }
     } else {
       // Handle individual assignment selection
       if (newSelected.has(assignmentId.toString())) {
-        newSelected.delete(assignmentId.toString());
-        newSelected.delete("all"); // Remove "all" if any individual is deselected
+        newSelected.delete(assignmentId.toString())
+        newSelected.delete("all") // Remove "all" if any individual is deselected
       } else {
-        newSelected.add(assignmentId.toString());
-        newSelected.delete("all"); // Remove "all" if individual is selected
+        newSelected.add(assignmentId.toString())
+        newSelected.delete("all") // Remove "all" if individual is selected
       }
 
       // If all individual assignments are selected, select "all"
       const allIndividualSelected = assignments.every((assignment) =>
         newSelected.has(assignment.assignmentId.toString())
-      );
+      )
       if (allIndividualSelected) {
-        newSelected.clear();
-        newSelected.add("all");
+        newSelected.clear()
+        newSelected.add("all")
       }
     }
 
-    setSelectedAssignments(newSelected);
-  };
+    setSelectedAssignments(newSelected)
+  }
 
   // Filter links based on selected assignments
   const filteredLinks = useMemo(() => {
     if (selectedAssignments.has("all")) {
-      return links;
+      return links
     }
     return links.filter((link) =>
       selectedAssignments.has(link.assignmentId.toString())
-    );
-  }, [links, selectedAssignments]);
+    )
+  }, [links, selectedAssignments])
 
   // Calculate interaction counts for each user based on filtered links
   const userInteractionCounts = useMemo(() => {
-    const counts = new Map();
-    users.forEach((user) => counts.set(user.id, 0));
+    const counts = new Map()
+    users.forEach((user) => counts.set(user.id, 0))
 
     filteredLinks.forEach((link) => {
-      counts.set(link.user1, (counts.get(link.user1) || 0) + 1);
-      counts.set(link.user2, (counts.get(link.user2) || 0) + 1);
-    });
+      counts.set(link.user1, (counts.get(link.user1) || 0) + 1)
+      counts.set(link.user2, (counts.get(link.user2) || 0) + 1)
+    })
 
-    return counts;
-  }, [users, filteredLinks]);
+    return counts
+  }, [users, filteredLinks])
 
   // Memoized computation of users not in interactions
   const usersNotInInteractions = useMemo(() => {
     // Get all user IDs that appear in filtered interactions
-    const userIdsInInteractions = new Set();
+    const userIdsInInteractions = new Set()
     filteredLinks.forEach((link) => {
-      userIdsInInteractions.add(link.user1);
-      userIdsInInteractions.add(link.user2);
-    });
+      userIdsInInteractions.add(link.user1)
+      userIdsInInteractions.add(link.user2)
+    })
 
     // Find users that are not in any interactions
-    return users.filter((user) => !userIdsInInteractions.has(user.id));
-  }, [users, filteredLinks]);
+    return users.filter((user) => !userIdsInInteractions.has(user.id))
+  }, [users, filteredLinks])
 
   // Calculate dynamic dimensions based on data size
-  const numUsers = users.length;
-  const numLinks = filteredLinks.length;
+  const numUsers = users.length
+  const numLinks = filteredLinks.length
 
   // Base dimensions that scale with data size
-  const baseWidth = 700;
-  const baseHeight = 500;
+  const baseWidth = 700
+  const baseHeight = 500
 
   // Scale factors based on data size
-  const userScaleFactor = Math.min(Math.max(numUsers / 50, 0.8), 2.0); // Scale between 0.8x and 2x
-  const linkScaleFactor = Math.min(Math.max(numLinks / 100, 0.8), 1.5); // Scale between 0.8x and 1.5x
+  const userScaleFactor = Math.min(Math.max(numUsers / 50, 0.8), 2.0) // Scale between 0.8x and 2x
 
   // Calculate final dimensions
-  const width = Math.round(baseWidth * userScaleFactor);
-  const height = Math.round(baseHeight * userScaleFactor);
+  const width = Math.round(baseWidth * userScaleFactor)
+  const height = Math.round(baseHeight * userScaleFactor)
 
   // Handle clicking outside dropdown to close it
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (isDropdownOpen && !event.target.closest(".dropdown-container")) {
-        setIsDropdownOpen(false);
+        setIsDropdownOpen(false)
       }
-    };
+    }
 
-    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside)
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [isDropdownOpen]);
+      document.removeEventListener("mousedown", handleClickOutside)
+    }
+  }, [isDropdownOpen])
 
   useEffect(() => {
     const simLinks = filteredLinks.map((d) => ({
@@ -140,13 +139,13 @@ export default function DisjointNodeGraph() {
       // Convert user1/user2 to source/target for D3 compatibility
       source: d.user1,
       target: d.user2,
-    }));
-    const simUsers = users.map((d) => ({ ...d }));
-    const numNodes = simUsers.length;
+    }))
+    const simUsers = users.map((d) => ({ ...d }))
+    const numNodes = simUsers.length
 
     // Logarithmic scaling for smoother adjustment
-    const CLUMP_STRENGTH = -30 * Math.log(numNodes + 1); // stronger repulsion with more nodes, default (-0.3)
-    const CENTER_STRENGTH = 0.1; //Default (0.1)
+    const CLUMP_STRENGTH = -30 * Math.log(numNodes + 1) // stronger repulsion with more nodes, default (-0.3)
+    const CENTER_STRENGTH = 0.1 //Default (0.1)
 
     const simulation = d3
       .forceSimulation(simUsers)
@@ -156,14 +155,14 @@ export default function DisjointNodeGraph() {
       )
       .force("charge", d3.forceManyBody().strength(CLUMP_STRENGTH))
       .force("x", d3.forceX().strength(CENTER_STRENGTH))
-      .force("y", d3.forceY().strength(CENTER_STRENGTH));
+      .force("y", d3.forceY().strength(CENTER_STRENGTH))
 
     const svg = d3
       .create("svg")
       .attr("width", width)
       .attr("height", height)
       .attr("viewBox", [-width / 2, -height / 2, width, height])
-      .attr("style", "max-width: 100%; height: auto;");
+      .attr("style", "max-width: 100%; height: auto;")
 
     const link = svg
       .append("g")
@@ -172,10 +171,10 @@ export default function DisjointNodeGraph() {
       .selectAll("line")
       .data(simLinks)
       .join("line")
-      .attr("stroke-width", 2); // Fixed width since value is now a string
+      .attr("stroke-width", 2) // Fixed width since value is now a string
 
     // Tooltip div (append to body for reliable overlay)
-    let tooltip = d3.select("body").selectAll(".d3-tooltip").data([null]);
+    let tooltip = d3.select("body").selectAll(".d3-tooltip").data([null])
     tooltip = tooltip
       .enter()
       .append("div")
@@ -189,7 +188,7 @@ export default function DisjointNodeGraph() {
       .style("pointer-events", "none")
       .style("font-size", "14px")
       .style("z-index", 1000)
-      .style("display", "none");
+      .style("display", "none")
 
     const node = svg
       .append("g")
@@ -220,17 +219,17 @@ export default function DisjointNodeGraph() {
             }<br/><strong>Interactions:</strong> ${
               userInteractionCounts.get(d.id) || 0
             }`
-          );
+          )
       })
       .on("mousemove", function (event) {
         // Use pageX/pageY for absolute positioning
         tooltip
           .style("left", event.pageX + 16 + "px")
-          .style("top", event.pageY - 24 + "px");
+          .style("top", event.pageY - 24 + "px")
       })
       .on("mouseout", function () {
-        tooltip.style("display", "none");
-      });
+        tooltip.style("display", "none")
+      })
 
     node.call(
       d3
@@ -238,67 +237,67 @@ export default function DisjointNodeGraph() {
         .on("start", dragstarted)
         .on("drag", dragged)
         .on("end", dragended)
-    );
+    )
 
     // Add link tooltips
     link
       .on("mouseover", function (event, d) {
         const assignmentTitle =
-          assignmentMap.get(d.assignmentId) || `Assignment ${d.assignmentId}`;
+          assignmentMap.get(d.assignmentId) || `Assignment ${d.assignmentId}`
         tooltip
           .style("display", "block")
           .html(
             `<strong>Users:</strong> ${d.user1} ↔ ${d.user2}<br/><strong>Assignment:</strong> ${assignmentTitle}<br/><strong>Content:</strong> ${d.value}`
-          );
+          )
       })
       .on("mousemove", function (event) {
         tooltip
           .style("left", event.pageX + 16 + "px")
-          .style("top", event.pageY - 24 + "px");
+          .style("top", event.pageY - 24 + "px")
       })
       .on("mouseout", function () {
-        tooltip.style("display", "none");
-      });
+        tooltip.style("display", "none")
+      })
 
     simulation.on("tick", () => {
       link
         .attr("x1", (d) => d.source.x)
         .attr("y1", (d) => d.source.y)
         .attr("x2", (d) => d.target.x)
-        .attr("y2", (d) => d.target.y);
+        .attr("y2", (d) => d.target.y)
 
-      node.attr("cx", (d) => d.x).attr("cy", (d) => d.y);
-    });
+      node.attr("cx", (d) => d.x).attr("cy", (d) => d.y)
+    })
 
     function dragstarted(event) {
-      if (!event.active) simulation.alphaTarget(0.3).restart();
-      event.subject.fx = event.subject.x;
-      event.subject.fy = event.subject.y;
+      if (!event.active) simulation.alphaTarget(0.3).restart()
+      event.subject.fx = event.subject.x
+      event.subject.fy = event.subject.y
     }
 
     function dragged(event) {
-      event.subject.fx = event.x;
-      event.subject.fy = event.y;
+      event.subject.fx = event.x
+      event.subject.fy = event.y
     }
 
     function dragended(event) {
-      if (!event.active) simulation.alphaTarget(0);
-      event.subject.fx = null;
-      event.subject.fy = null;
+      if (!event.active) simulation.alphaTarget(0)
+      event.subject.fx = null
+      event.subject.fy = null
     }
 
     // Clear previous SVG if any
     if (containerRef.current) {
-      containerRef.current.innerHTML = "";
-      containerRef.current.appendChild(svg.node());
+      containerRef.current.innerHTML = ""
+      containerRef.current.appendChild(svg.node())
     }
 
     // Cleanup on unmount
     return () => {
-      simulation.stop();
-      if (tooltip) tooltip.remove();
-    };
-  }, [users, filteredLinks, assignments, userInteractionCounts, width, height]);
+      simulation.stop()
+      if (tooltip) tooltip.remove()
+    }
+  }, [users, filteredLinks, assignments, userInteractionCounts, width, height])
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100vh" }}>
@@ -446,10 +445,10 @@ export default function DisjointNodeGraph() {
                   {assignments.map((assignment) => {
                     const assignmentInteractionCount = links.filter(
                       (link) => link.assignmentId === assignment.assignmentId
-                    ).length;
+                    ).length
                     const isSelected = selectedAssignments.has(
                       assignment.assignmentId.toString()
-                    );
+                    )
 
                     return (
                       <label
@@ -479,7 +478,7 @@ export default function DisjointNodeGraph() {
                         {assignment.title} ({assignmentInteractionCount}{" "}
                         interactions)
                       </label>
-                    );
+                    )
                   })}
                 </div>
               )}
@@ -541,5 +540,5 @@ export default function DisjointNodeGraph() {
         </div>
       </div>
     </div>
-  );
+  )
 }
